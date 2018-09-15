@@ -9,9 +9,9 @@ def eval_polciy(policy, world, gamma=0.99, threshold=1e-10, noise=0.8):
         V_vals[state] = world.neg_reward_vals[state]
 
     while True:
+        prev_v = deepcopy(V_vals)
         for state in world.states:
             v_state = 0.
-            prev_v = deepcopy(V_vals)
             for action in policy[state]: # policy is a dictionary of state. policy[state] is a dictionary of actions
                 if state in world.pos_reward_states:
                     v_state = world.pos_reward_vals[state]
@@ -32,7 +32,6 @@ def eval_polciy(policy, world, gamma=0.99, threshold=1e-10, noise=0.8):
                 v_state += policy[state][action] * (v_n + v_l + v_r)
             V_vals[state] = v_state
         if sum([abs(prev_v[key] - V_vals[key]) for key in V_vals]) <= threshold:
-            #import pdb; pdb.set_trace()
             break
     return dict(V_vals)
 
@@ -87,7 +86,6 @@ def improve_policy(world,
     v_ctr = 0
 
     while True:
-        #import pdb; pdb.set_trace()
         V = eval_polciy(policy, world, gamma, threshold, noise)
         is_policy_stable = True
 
@@ -99,7 +97,6 @@ def improve_policy(world,
             policy = one_hot_policy_state(policy, state, best_action)
         if v_ctr % verbose == 0:
             world.display_world_v_vals(V)
-            #import pdb; pdb.set_trace()
         v_ctr += 1
         if is_policy_stable or v_ctr == max_iter:
             return finalize_pi(policy), V
